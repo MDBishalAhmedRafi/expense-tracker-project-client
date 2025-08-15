@@ -45,7 +45,9 @@ export default function ExpenseTable() {
     e.preventDefault();
     if (!editExpense) return;
 
-    await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
+    console.log("Updating expense ID:", editExpense._id);
+
+await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
   title: form.title,
   amount: parseFloat(form.amount),
   category: form.category,
