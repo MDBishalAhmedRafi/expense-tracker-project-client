@@ -7,7 +7,7 @@ export default function AddExpensePage() {
   const [refreshFlag, setRefreshFlag] = useState(false);
 
   const handleAddExpense = () => {
-    setRefreshFlag(!refreshFlag); // optional if you want to trigger list refresh
+    setRefreshFlag(!refreshFlag);
   };
 
   return (

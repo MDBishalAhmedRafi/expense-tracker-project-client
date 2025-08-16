@@ -2,20 +2,33 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import ExpenseChart from "./ExpenseChart";
+import ExpenseFilter from "./ExpenseFilter";
 
-export default function ExpenseTable() {
+export default function ExpenseList() {
   const [expenses, setExpenses] = useState([]);
+  const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editExpense, setEditExpense] = useState(null);
-  const [form, setForm] = useState({ title: "", amount: "", category: "", date: "" });
+  const [form, setForm] = useState({
+    title: "",
+    amount: "",
+    category: "",
+    date: "",
+  });
 
+  // Fetch expenses from backend
   const fetchExpenses = async () => {
     setLoading(true);
     try {
       const res = await axios.get("http://localhost:5000/expenses");
       setExpenses(res.data);
+      setFilteredExpenses(res.data); // initially all expenses
     } catch (err) {
       console.error(err);
+      toast.error("❌ Failed to load expenses!");
     } finally {
       setLoading(false);
     }
@@ -25,12 +38,30 @@ export default function ExpenseTable() {
     fetchExpenses();
   }, []);
 
+  // Handle delete with SweetAlert
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this expense?")) return;
-    await axios.delete(`http://localhost:5000/expenses/${id}`);
-    fetchExpenses();
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`http://localhost:5000/expenses/${id}`);
+          toast.success("🗑️ Expense deleted!");
+          fetchExpenses();
+        } catch (err) {
+          toast.error("❌ Failed to delete expense!");
+        }
+      }
+    });
   };
 
+  // Handle Edit Click
   const handleEditClick = (exp) => {
     setEditExpense(exp);
     setForm({
@@ -41,34 +72,67 @@ export default function ExpenseTable() {
     });
   };
 
+  // Handle Update
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!editExpense) return;
 
-    console.log("Updating expense ID:", editExpense._id);
-
-await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
-  title: form.title,
-  amount: parseFloat(form.amount),
-  category: form.category,
-  date: form.date,
-});
+    try {
+      await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
+        title: form.title,
+        amount: parseFloat(form.amount),
+        category: form.category,
+        date: form.date,
+      });
+      toast.success("✅ Expense updated successfully!");
+      setEditExpense(null);
+      fetchExpenses();
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Failed to update expense!");
+    }
   };
 
-  const total = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+  // Handle Filter (client-side)
+  const handleFilter = ({ category, start, end }) => {
+    let temp = [...expenses];
+
+    if (category) temp = temp.filter((e) => e.category === category);
+    if (start) temp = temp.filter((e) => new Date(e.date) >= new Date(start));
+    if (end) temp = temp.filter((e) => new Date(e.date) <= new Date(end));
+
+    setFilteredExpenses(temp);
+  };
+
+  const total = filteredExpenses.reduce(
+    (sum, exp) => sum + parseFloat(exp.amount),
+    0
+  );
 
   return (
-    <div>
-      <h2 className="text-lg font-bold mb-4">Total Expense: ${total.toFixed(2)}</h2>
+    <div className="space-y-6">
+      {/* Filter Component */}
+      <ExpenseFilter onFilter={handleFilter} />
 
+      {/* Pie Chart */}
+      <ExpenseChart expenses={filteredExpenses} />
+
+      {/* Total */}
+      <h2 className="text-lg font-bold">Total Expense: ${total.toFixed(2)}</h2>
+
+      {/* Edit Form */}
       {editExpense && (
-        <form onSubmit={handleUpdate} className="bg-base-200 p-4 rounded mb-6 shadow-md space-y-2">
+        <form
+          onSubmit={handleUpdate}
+          className="bg-base-200 p-4 rounded mb-6 shadow-md space-y-2"
+        >
           <h3 className="font-bold">Edit Expense</h3>
           <input
             type="text"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="input input-bordered w-full"
+            placeholder="Title"
             required
           />
           <input
@@ -76,6 +140,7 @@ await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
             value={form.amount}
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
             className="input input-bordered w-full"
+            placeholder="Amount"
             required
           />
           <select
@@ -97,10 +162,13 @@ await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
             className="input input-bordered w-full"
             required
           />
-          <button type="submit" className="btn btn-primary w-full">Update Expense</button>
+          <button type="submit" className="btn btn-primary w-full">
+            Update Expense
+          </button>
         </form>
       )}
 
+      {/* Expenses Table */}
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -116,7 +184,7 @@ await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
               </tr>
             </thead>
             <tbody>
-              {expenses.map((exp) => (
+              {filteredExpenses.map((exp) => (
                 <tr key={exp._id}>
                   <td>{exp.title}</td>
                   <td>{exp.amount}</td>
@@ -137,8 +205,18 @@ await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
                   </td>
                   <td>{new Date(exp.date).toLocaleDateString()}</td>
                   <td className="flex gap-2">
-                    <button className="btn btn-sm btn-outline" onClick={() => handleEditClick(exp)}>Edit</button>
-                    <button className="btn btn-sm btn-error" onClick={() => handleDelete(exp._id)}>Delete</button>
+                    <button
+                      className="btn btn-sm btn-outline"
+                      onClick={() => handleEditClick(exp)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-error"
+                      onClick={() => handleDelete(exp._id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
