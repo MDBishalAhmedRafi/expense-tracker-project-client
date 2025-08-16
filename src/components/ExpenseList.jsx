@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import ExpenseChart from "./ExpenseChart";
 import ExpenseFilter from "./ExpenseFilter";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 export default function ExpenseList() {
   const [expenses, setExpenses] = useState([]);
@@ -19,13 +21,17 @@ export default function ExpenseList() {
     date: "",
   });
 
-  // Fetch expenses from backend
+  useEffect(() => {
+    AOS.init({ duration: 600, once: true });
+    fetchExpenses();
+  }, []);
+
   const fetchExpenses = async () => {
     setLoading(true);
     try {
       const res = await axios.get("http://localhost:5000/expenses");
       setExpenses(res.data);
-      setFilteredExpenses(res.data); // initially all expenses
+      setFilteredExpenses(res.data);
     } catch (err) {
       console.error(err);
       toast.error("❌ Failed to load expenses!");
@@ -34,11 +40,6 @@ export default function ExpenseList() {
     }
   };
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
-
-  // Handle delete with SweetAlert
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -61,7 +62,6 @@ export default function ExpenseList() {
     });
   };
 
-  // Handle Edit Click
   const handleEditClick = (exp) => {
     setEditExpense(exp);
     setForm({
@@ -72,7 +72,6 @@ export default function ExpenseList() {
     });
   };
 
-  // Handle Update
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!editExpense) return;
@@ -93,14 +92,11 @@ export default function ExpenseList() {
     }
   };
 
-  // Handle Filter (client-side)
   const handleFilter = ({ category, start, end }) => {
     let temp = [...expenses];
-
     if (category) temp = temp.filter((e) => e.category === category);
     if (start) temp = temp.filter((e) => new Date(e.date) >= new Date(start));
     if (end) temp = temp.filter((e) => new Date(e.date) <= new Date(end));
-
     setFilteredExpenses(temp);
   };
 
@@ -110,23 +106,33 @@ export default function ExpenseList() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Filter Component */}
-      <ExpenseFilter onFilter={handleFilter} />
+    <div className="space-y-8 px-4 md:px-8 py-6">
+      {/* Filter */}
+      <div data-aos="fade-down">
+        <ExpenseFilter onFilter={handleFilter} />
+      </div>
 
-      {/* Pie Chart */}
-      <ExpenseChart expenses={filteredExpenses} />
+      {/* Chart */}
+      <div data-aos="fade-up">
+        <ExpenseChart expenses={filteredExpenses} />
+      </div>
 
       {/* Total */}
-      <h2 className="text-lg font-bold">Total Expense: ${total.toFixed(2)}</h2>
+      <h2
+        className="text-xl font-bold text-primary text-center"
+        data-aos="zoom-in"
+      >
+        Total Expense: ${total.toFixed(2)}
+      </h2>
 
       {/* Edit Form */}
       {editExpense && (
         <form
           onSubmit={handleUpdate}
-          className="bg-base-200 p-4 rounded mb-6 shadow-md space-y-2"
+          className="bg-base-200 p-6 rounded-xl shadow-md space-y-4 max-w-xl mx-auto"
+          data-aos="fade-up"
         >
-          <h3 className="font-bold">Edit Expense</h3>
+          <h3 className="text-lg font-bold text-center">Edit Expense</h3>
           <input
             type="text"
             value={form.title}
@@ -168,62 +174,64 @@ export default function ExpenseList() {
         </form>
       )}
 
-      {/* Expenses Table */}
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="table table-zebra w-full">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Amount ($)</th>
-                <th>Category</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredExpenses.map((exp) => (
-                <tr key={exp._id}>
-                  <td>{exp.title}</td>
-                  <td>{exp.amount}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        exp.category === "Food"
-                          ? "badge-info"
-                          : exp.category === "Transport"
-                          ? "badge-warning"
-                          : exp.category === "Shopping"
-                          ? "badge-success"
-                          : "badge-accent"
-                      }`}
-                    >
-                      {exp.category}
-                    </span>
-                  </td>
-                  <td>{new Date(exp.date).toLocaleDateString()}</td>
-                  <td className="flex gap-2">
-                    <button
-                      className="btn btn-sm btn-outline"
-                      onClick={() => handleEditClick(exp)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-sm btn-error"
-                      onClick={() => handleDelete(exp._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+      {/* Table */}
+      <div data-aos="fade-up">
+        {loading ? (
+          <p className="text-center text-gray-500">Loading...</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table table-zebra w-full text-sm">
+              <thead className="bg-base-300 text-base-content">
+                <tr>
+                  <th>Title</th>
+                  <th>Amount ($)</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {filteredExpenses.map((exp) => (
+                  <tr key={exp._id} className="hover:bg-base-100 transition">
+                    <td>{exp.title}</td>
+                    <td>{exp.amount}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          exp.category === "Food"
+                            ? "badge-info"
+                            : exp.category === "Transport"
+                            ? "badge-warning"
+                            : exp.category === "Shopping"
+                            ? "badge-success"
+                            : "badge-accent"
+                        }`}
+                      >
+                        {exp.category}
+                      </span>
+                    </td>
+                    <td>{new Date(exp.date).toLocaleDateString()}</td>
+                    <td className="flex gap-2">
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => handleEditClick(exp)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-error"
+                        onClick={() => handleDelete(exp._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
