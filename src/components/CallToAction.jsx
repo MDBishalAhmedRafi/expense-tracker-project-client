@@ -18,14 +18,14 @@ export default function CallToAction() {
 
   return (
     <section
-      className="bg-base-200 text-white py-20 px-6 text-center mt-16"
+      className="bg-base-200 dark:text-white py-20 px-6 text-center mt-16"
       data-aos="zoom-in"
     >
       <div className="max-w-3xl mx-auto">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight">
           Ready to take control of your finances?
         </h2>
-        <p className="text-lg sm:text-xl mb-8 text-white/90">
+        <p className="text-lg sm:text-xl mb-8 dark:text-white/90">
           Start tracking your expenses today and build a better financial future.
         </p>
         <button
