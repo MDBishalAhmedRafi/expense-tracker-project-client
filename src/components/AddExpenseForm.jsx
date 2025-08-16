@@ -32,7 +32,7 @@ export default function AddExpenseForm({ onAdd }) {
       });
 
       onAdd(res.data);
-      toast.success("✅ Expense added successfully!");
+      toast.success("Expense added successfully!");
 
       setTitle("");
       setAmount("");
@@ -40,7 +40,7 @@ export default function AddExpenseForm({ onAdd }) {
       setDate("");
     } catch (err) {
       setError(err.response?.data?.error || "Something went wrong!");
-      toast.error("❌ Failed to add expense!");
+      toast.error("Failed to add expense!");
     } finally {
       setLoading(false);
     }

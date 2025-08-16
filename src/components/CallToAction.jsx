@@ -18,7 +18,7 @@ export default function CallToAction() {
 
   return (
     <section
-      className="bg-base-200 text-white py-20 px-6 text-center"
+      className="bg-base-200 text-white py-20 px-6 text-center mt-16"
       data-aos="zoom-in"
     >
       <div className="max-w-3xl mx-auto">

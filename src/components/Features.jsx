@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -27,7 +29,7 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-16 px-4 bg-base-100">
+    <section className="py-16 px-4 bg-base-100 mt-16">
       <h2 className="text-4xl font-bold text-center mb-12">
         Why Choose <span className="text-primary">Us?</span>
       </h2>

@@ -34,7 +34,7 @@ export default function ExpenseList() {
       setFilteredExpenses(res.data);
     } catch (err) {
       console.error(err);
-      toast.error("❌ Failed to load expenses!");
+      toast.error("Failed to load expenses!");
     } finally {
       setLoading(false);
     }
@@ -53,10 +53,10 @@ export default function ExpenseList() {
       if (result.isConfirmed) {
         try {
           await axios.delete(`http://localhost:5000/expenses/${id}`);
-          toast.success("🗑️ Expense deleted!");
+          toast.success("Expense deleted!");
           fetchExpenses();
         } catch (err) {
-          toast.error("❌ Failed to delete expense!");
+          toast.error("Failed to delete expense!");
         }
       }
     });
@@ -83,12 +83,12 @@ export default function ExpenseList() {
         category: form.category,
         date: form.date,
       });
-      toast.success("✅ Expense updated successfully!");
+      toast.success("Expense updated successfully!");
       setEditExpense(null);
       fetchExpenses();
     } catch (err) {
       console.error(err);
-      toast.error("❌ Failed to update expense!");
+      toast.error("Failed to update expense!");
     }
   };
 
