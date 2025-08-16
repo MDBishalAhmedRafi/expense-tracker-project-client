@@ -13,7 +13,7 @@ export const ExpenseProvider = ({ children }) => {
   const fetchExpenses = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/expenses");
+      const res = await axios.get("https://expense-tracker-server-ochre.vercel.app/expenses");
       setExpenses(res.data);
     } catch (err) {
       console.error(err);

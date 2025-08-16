@@ -24,7 +24,7 @@ export default function AddExpenseForm({ onAdd }) {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/expenses", {
+      const res = await axios.post("https://expense-tracker-server-ochre.vercel.app/expenses", {
         title,
         amount,
         category,

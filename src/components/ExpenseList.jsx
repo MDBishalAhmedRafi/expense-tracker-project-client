@@ -29,7 +29,7 @@ export default function ExpenseList() {
   const fetchExpenses = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/expenses");
+      const res = await axios.get("https://expense-tracker-server-ochre.vercel.app/expenses");
       setExpenses(res.data);
       setFilteredExpenses(res.data);
     } catch (err) {
@@ -52,7 +52,7 @@ export default function ExpenseList() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/expenses/${id}`);
+          await axios.delete(`https://expense-tracker-server-ochre.vercel.app/expenses/${id}`);
           toast.success("Expense deleted!");
           fetchExpenses();
         } catch (err) {
@@ -77,7 +77,7 @@ export default function ExpenseList() {
     if (!editExpense) return;
 
     try {
-      await axios.patch(`http://localhost:5000/expenses/${editExpense._id}`, {
+      await axios.patch(`https://expense-tracker-server-ochre.vercel.app/expenses/${editExpense._id}`, {
         title: form.title,
         amount: parseFloat(form.amount),
         category: form.category,
